@@ -342,6 +342,6 @@ class Obex
             }
         }
 
-        return false;
+        return $removed;
     }
 }
