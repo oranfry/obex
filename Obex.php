@@ -89,6 +89,14 @@ class Obex
                     return strcmp('', $value) > 0;
                 }
 
+                if ($cmp == 'lte') {
+                    return strcmp('', $value) <= 0;
+                }
+
+                if ($cmp == 'gte') {
+                    return strcmp('', $value) >= 0;
+                }
+
                 error_response(__METHOD__ . ': unsupported comparison');
             }
 
@@ -144,6 +152,14 @@ class Obex
 
             if ($cmp == 'gt') {
                 return strcmp($resolved, $value) > 0;
+            }
+
+            if ($cmp == 'lte') {
+                return strcmp($resolved, $value) <= 0;
+            }
+
+            if ($cmp == 'gte') {
+                return strcmp($resolved, $value) >= 0;
             }
 
             error_response(__METHOD__ . ': unsupported comparison');
