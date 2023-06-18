@@ -18,10 +18,20 @@ class Obex
         };
     }
 
-    public static function createStringCmp(string $property, bool $desc = false)
+    public static function createStringCmp(...$expressions)
     {
-        return function (object $a, object $b) use ($property, $desc) {
-            return ($desc ? -1 : 1) * ((string) static::propertyExpressionValue($a, $property) <=> (string) static::propertyExpressionValue($b, $property));
+        return function (object $a, object $b) use ($expressions) {
+            foreach ($expressions as $expression) {
+                preg_match('/^(-?)(.*)/', $expression, $groups);
+
+                $property = $groups[2];
+
+                if ($result = ((string) static::propertyExpressionValue($a, $property) <=> (string) static::propertyExpressionValue($b, $property))) {
+                    return ($groups[1] == '-' ? -1 : 1) * $result;
+                }
+            }
+
+            return 0;
         };
     }
 
