@@ -40,7 +40,7 @@ class Obex
         };
     }
 
-    public static function filter($objectArray, $property, string $cmp = 'exists', $value = null, $value_is_expression = false): array
+    public static function filter(array $objectArray, $property, string $cmp = 'exists', $value = null, $value_is_expression = false): array
     {
         return array_values(array_filter($objectArray, function ($o) use ($property, $cmp, $value, $value_is_expression) {
             if (!is_object($o)) {
@@ -188,7 +188,7 @@ class Obex
         return reset($found) ?: null;
     }
 
-    public static function findAll($objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
+    public static function findAll(array $objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
     {
         return array_map(function($value) use ($objectArray, $property, $cmp) {
             return static::find($objectArray, $property, $cmp, $value, $value_is_expression);
@@ -200,7 +200,7 @@ class Obex
         return new ObjectArray($objects);
     }
 
-    public static function index($objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false)
+    public static function index(array $objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false)
     {
         foreach ($objectArray as $index => $object) {
             if (count(static::filter([$object], $property, $cmp, $value, $value_is_expression))) {
@@ -209,14 +209,25 @@ class Obex
         }
     }
 
-    public static function indicies($objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
+    public static function indicies(array $objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
     {
         return array_map(function($value) use ($objectArray, $property, $cmp) {
             return static::index($objectArray, $property, $cmp = 'exists', $value, $value_is_expression);
         }, $values);
     }
 
-    public static function map($objectArray, $property): array
+    public static function key(array $objectArray, string $property): array
+    {
+        $keyed = [];
+
+        foreach ($objectArray as $object) {
+            $keyed[static::propertyExpressionValue($object, $property)] = $object;
+        }
+
+        return $keyed;
+    }
+
+    public static function map($objectArray, string $property): array
     {
         $callback = function ($o) use ($property) {
             return static::propertyExpressionValue($o, $property);
@@ -353,7 +364,7 @@ class Obex
         return $return;
     }
 
-    public static function remove(&$objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false)
+    public static function remove(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false)
     {
         foreach ($objectArray as $key => $object) {
             if ($removed = static::find([$object], $property, $cmp, $value, $value_is_expression)) {
@@ -366,7 +377,7 @@ class Obex
         return false;
     }
 
-    public static function removeAll(&$objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): array
+    public static function removeAll(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): array
     {
         $removed = [];
 

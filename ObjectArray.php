@@ -36,6 +36,11 @@ class ObjectArray
         return Obex::indicies($this->objects, $property, $cmp, $values, $value_is_expression);
     }
 
+    public function key(string $property): self
+    {
+        return new static(Obex::key($this->objects, $property));
+    }
+
     public function map(string $property): self
     {
         return new static(Obex::map($this->objects, $property));
