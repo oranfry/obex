@@ -2,6 +2,8 @@
 
 namespace obex;
 
+use Closure;
+
 class Obex
 {
     public static function create(): ObjectArray
