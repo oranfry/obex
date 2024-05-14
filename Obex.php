@@ -202,7 +202,7 @@ class Obex
         return new ObjectArray($objects);
     }
 
-    public static function index(array $objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false)
+    public static function index(array $objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): string|int
     {
         foreach ($objectArray as $index => $object) {
             if (count(static::filter([$object], $property, $cmp, $value, $value_is_expression))) {
@@ -366,7 +366,7 @@ class Obex
         return $return;
     }
 
-    public static function remove(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false)
+    public static function remove(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): ?object
     {
         foreach ($objectArray as $key => $object) {
             if ($removed = static::find([$object], $property, $cmp, $value, $value_is_expression)) {
@@ -376,7 +376,7 @@ class Obex
             }
         }
 
-        return false;
+        return null;
     }
 
     public static function removeAll(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): array
