@@ -51,6 +51,13 @@ class ObjectArray
         return new static(Obex::findAll($this->objects, $property, $cmp, $values, $value_is_expression));
     }
 
+    public function first(): ?object
+    {
+        $resolved = $this->resolve();
+
+        return reset($resolved);
+    }
+
     public function index(string $property, string $cmp = 'exists', $value = null, $value_is_expression = false): string|int
     {
         return Obex::index($this->objects, $property, $cmp, $value, $value_is_expression);
