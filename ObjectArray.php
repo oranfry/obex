@@ -55,6 +55,10 @@ class ObjectArray
     {
         $resolved = $this->resolve();
 
+        if (!count($resolved)) {
+            return null;
+        }
+
         return reset($resolved);
     }
 

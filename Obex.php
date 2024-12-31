@@ -187,7 +187,11 @@ class Obex
     {
         $found = static::filter($objectArray, $property, $cmp, $value, $value_is_expression = false);
 
-        return reset($found) ?: null;
+        if (!count($found)) {
+            return null;
+        }
+
+        return reset($found);
     }
 
     public static function findAll(array $objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
