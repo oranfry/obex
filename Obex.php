@@ -46,7 +46,7 @@ class Obex
     {
         return array_values(array_filter($objectArray, function ($o) use ($property, $cmp, $value, $value_is_expression) {
             if (!is_object($o)) {
-                error_response(__METHOD__ . ': encountered non-object');
+                throw new Exception(__METHOD__ . ': encountered non-object');
             }
 
             if ($value_is_expression) {
@@ -114,7 +114,7 @@ class Obex
                     return strcmp('', $value) >= 0;
                 }
 
-                error_response(__METHOD__ . ': unsupported comparison');
+                throw new Exception(__METHOD__ . ': unsupported comparison');
             }
 
             if ($cmp == 'exists') {
@@ -179,7 +179,7 @@ class Obex
                 return strcmp($resolved, $value) >= 0;
             }
 
-            error_response(__METHOD__ . ': unsupported comparison');
+            throw new Exception(__METHOD__ . ': unsupported comparison');
         }));
     }
 
@@ -267,7 +267,7 @@ class Obex
         }
 
         if ($property) {
-            error_response(__METHOD__ . ': invalid property expression');
+            throw new Exception(__METHOD__ . ': invalid property expression');
         }
 
         return $parts;
@@ -318,7 +318,7 @@ class Obex
         foreach (static::parsePropertySubexpression($property) as $part) {
             if ($part->type == 'object') {
                 if (!is_object($return)) {
-                    error_response(__METHOD__ . ': not an object');
+                    throw new Exception(__METHOD__ . ': not an object');
                 }
 
                 if (!in_array($part->prop, array_keys(get_object_vars($return)))) {
@@ -330,7 +330,7 @@ class Obex
                         return null;
                     }
 
-                    error_response(__METHOD__ . ': object property does not exist: ' . $part->prop);
+                    throw new Exception(__METHOD__ . ': object property does not exist: ' . $part->prop);
                 }
 
                 if (is_array($return->{$part->prop})) {
@@ -340,7 +340,7 @@ class Obex
                 }
             } else {
                 if (!is_array($return)) {
-                    error_response(__METHOD__ . ': not an array');
+                    throw new Exception(__METHOD__ . ': not an array');
                 }
 
                 if (!array_key_exists($part->prop, $return)) {
@@ -352,7 +352,7 @@ class Obex
                         return null;
                     }
 
-                    error_response(__METHOD__ . ': array key does not exist: ' . $part->prop);
+                    throw new Exception(__METHOD__ . ': array key does not exist: ' . $part->prop);
                 }
 
                 if (is_array($return[$part->prop])) {
