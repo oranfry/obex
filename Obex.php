@@ -222,22 +222,26 @@ class Obex
         }, $values);
     }
 
-    public static function key(array $objectArray, string $property): array
+    public static function key(array $objectArray, string|Closure $property): array
     {
         $keyed = [];
 
         foreach ($objectArray as $object) {
-            $keyed[static::propertyExpressionValue($object, $property)] = $object;
+            $key = is_string($property) ?
+                static::propertyExpressionValue($object, $property) :
+                $property($object);
+
+            $keyed[$key] = $object;
         }
 
         return $keyed;
     }
 
-    public static function map($objectArray, string $property): array
+    public static function map($objectArray, string|Closure $property): array
     {
-        $callback = function ($o) use ($property) {
-            return static::propertyExpressionValue($o, $property);
-        };
+        $callback = fn ($object) => is_string($property) ?
+            static::propertyExpressionValue($object, $property) :
+            $property($object);
 
         return array_map($callback, $objectArray);
     }

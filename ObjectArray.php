@@ -72,12 +72,12 @@ class ObjectArray
         return Obex::indicies($this->objects, $property, $cmp, $values, $value_is_expression);
     }
 
-    public function key(string $property): self
+    public function key(string|Closure $property): self
     {
         return new static(Obex::key($this->objects, $property));
     }
 
-    public function map(string $property): array
+    public function map(string|Closure $property): array
     {
         return Obex::map($this->objects, $property);
     }
