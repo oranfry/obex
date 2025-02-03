@@ -2,6 +2,8 @@
 
 namespace obex;
 
+use Closure;
+
 class ObjectArray
 {
     protected array $objects;
