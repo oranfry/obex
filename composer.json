@@ -2,7 +2,7 @@
     "name": "oranfry/obex",
     "autoload": {
         "psr-4": {
-            "obex\\": ""
+            "OranFry\\Obex\\": ""
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace obex;
+namespace OranFry\Obex;
 
 use Closure;
 

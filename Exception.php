@@ -1,6 +1,6 @@
 <?php
 
-namespace obex;
+namespace OranFry\Obex;
 
 class Exception extends \Exception
 {}
