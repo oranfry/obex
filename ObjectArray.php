@@ -20,6 +20,11 @@ class ObjectArray
         return $this;
     }
 
+    public function count(): int
+    {
+        return count($this->objects);
+    }
+
     public function delete(string $property, string $cmp = 'exists', $value = null, $value_is_expression = false): self
     {
         $copy = $this->objects;
