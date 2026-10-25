@@ -65,9 +65,9 @@ class Obex
         }, $values);
     }
 
-    public static function from(array $objects): ObjectArray
+    public static function from(array $objectArray): ObjectArray
     {
-        return new ObjectArray($objects);
+        return new ObjectArray($objectArray);
     }
 
     public static function index(array $objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): ?int
