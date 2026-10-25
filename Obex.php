@@ -44,154 +44,18 @@ class Obex
 
     public static function filter(array $objectArray, $property, string $cmp = 'exists', $value = null, $value_is_expression = false): array
     {
-        return array_values(array_filter($objectArray, function ($o) use ($property, $cmp, $value, $value_is_expression) {
-            if (!is_object($o)) {
-                throw new Exception(__METHOD__ . ': encountered non-object');
-            }
-
-            if ($value_is_expression) {
-                $value = static::propertyExpressionExists($o, $value) ? static::propertyExpressionValue($o, $value) : null;
-            }
-
-            if (!static::propertyExpressionExists($o, $property)) {
-                if ($cmp == 'notexists') {
-                    return true;
-                }
-
-                if ($cmp == 'exists') {
-                    return false;
-                }
-
-                if ($cmp == 'is') {
-                    return !$value;
-                }
-
-                if ($cmp == 'not') {
-                    return (bool) $value;
-                }
-
-                if ($cmp == 'in') {
-                    return in_array('', $value) || in_array(null, $value);
-                }
-
-                if ($cmp == 'notin') {
-                    return !in_array('', $value) || in_array(null, $value);
-                }
-
-                if ($cmp == 'null') {
-                    return true;
-                }
-
-                if ($cmp == 'notnull') {
-                    return false;
-                }
-
-                if ($cmp == 'matches') {
-                    return preg_match($value, '');
-                }
-
-                if ($cmp == 'truthy') {
-                    return false;
-                }
-
-                if ($cmp == 'falsy') {
-                    return true;
-                }
-
-                if ($cmp == 'lt') {
-                    return strcmp('', $value) < 0;
-                }
-
-                if ($cmp == 'gt') {
-                    return strcmp('', $value) > 0;
-                }
-
-                if ($cmp == 'lte') {
-                    return strcmp('', $value) <= 0;
-                }
-
-                if ($cmp == 'gte') {
-                    return strcmp('', $value) >= 0;
-                }
-
-                throw new Exception(__METHOD__ . ': unsupported comparison');
-            }
-
-            if ($cmp == 'exists') {
-                return true;
-            }
-
-            if ($cmp == 'notexists') {
-                return false;
-            }
-
-            $resolved = static::propertyExpressionValue($o, $property);
-
-            if ($cmp == 'is') {
-                return $resolved == $value;
-            }
-
-            if ($cmp == 'not') {
-                return $resolved != $value;
-            }
-
-            if ($cmp == 'in') {
-                return in_array($resolved, $value);
-            }
-
-            if ($cmp == 'notin') {
-                return !in_array($resolved, $value);
-            }
-
-            if ($cmp == 'null') {
-                return is_null($resolved);
-            }
-
-            if ($cmp == 'notnull') {
-                return !is_null($resolved);
-            }
-
-            if ($cmp == 'matches') {
-                return preg_match($value, $resolved);
-            }
-
-            if ($cmp == 'truthy') {
-                return (bool) $resolved;
-            }
-
-            if ($cmp == 'falsy') {
-                return !(bool) $resolved;
-            }
-
-            if ($cmp == 'lt') {
-                return strcmp($resolved, $value) < 0;
-            }
-
-            if ($cmp == 'gt') {
-                return strcmp($resolved, $value) > 0;
-            }
-
-            if ($cmp == 'lte') {
-                return strcmp($resolved, $value) <= 0;
-            }
-
-            if ($cmp == 'gte') {
-                return strcmp($resolved, $value) >= 0;
-            }
-
-            throw new Exception(__METHOD__ . ': unsupported comparison');
-        }));
+        return array_values(array_filter($objectArray, fn ($object) => static::test($object, $property, $cmp, $value, $value_is_expression)));
     }
 
-    public static function find($objectArray, $property, string $cmp = 'exists', $value = null, $value_is_expression = false): ?object
+    public static function find(array $objectArray, $property, string $cmp = 'exists', $value = null, $value_is_expression = false): ?object
     {
-        $found = static::filter($objectArray, $property, $cmp, $value, $value_is_expression = false);
-
-        if (!count($found)) {
-            return null;
+        foreach ($objectArray as $object) {
+            if (static::test($object, $property, $cmp, $value, $value_is_expression)) {
+                return $object;
+            }
         }
 
-        return reset($found);
+        return null;
     }
 
     public static function findAll(array $objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
@@ -206,13 +70,15 @@ class Obex
         return new ObjectArray($objects);
     }
 
-    public static function index(array $objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): string|int
+    public static function index(array $objectArray, $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): ?int
     {
         foreach ($objectArray as $index => $object) {
-            if (count(static::filter([$object], $property, $cmp, $value, $value_is_expression))) {
+            if (static::test($object, $property, $cmp, $value, $value_is_expression)) {
                 return $index;
             }
         }
+
+        return null;
     }
 
     public static function indicies(array $objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
@@ -376,11 +242,13 @@ class Obex
 
     public static function remove(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): ?object
     {
-        foreach ($objectArray as $key => $object) {
-            if ($removed = static::find([$object], $property, $cmp, $value, $value_is_expression)) {
-                unset($objectArray[$key]);
+        $count = count($objectArray);
 
-                return $removed;
+        for ($i = 0; $i < $count; $i++) {
+            if (static::test($object = $objectArray[$i], $property, $cmp, $value, $value_is_expression)) {
+                array_splice($objectArray, $i, 1);
+
+                return $object;
             }
         }
 
@@ -390,15 +258,153 @@ class Obex
     public static function removeAll(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): array
     {
         $removed = [];
+        $count = count($objectArray);
 
-        foreach ($objectArray as $key => $object) {
-            if ($removedOne = static::find([$object], $property, $cmp, $value, $value_is_expression)) {
-                unset($objectArray[$key]);
+        for ($i = 0; $i < $count; $i++) {
+            $object = $objectArray[$i];
 
-                $removed[] = $removedOne;
+            if (static::test($object, $property, $cmp, $value, $value_is_expression)) {
+                array_splice($objectArray, $i--, 1);
+                $count--;
+                $removed[] = $object;
             }
         }
 
         return $removed;
+    }
+
+    public static function test(object $o, $property, $cmp, $value, $value_is_expression): bool
+    {
+        if ($value_is_expression) {
+            $value = static::propertyExpressionExists($o, $value) ? static::propertyExpressionValue($o, $value) : null;
+        }
+
+        if (!static::propertyExpressionExists($o, $property)) {
+            if ($cmp == 'notexists') {
+                return true;
+            }
+
+            if ($cmp == 'exists') {
+                return false;
+            }
+
+            if ($cmp == 'is') {
+                return !$value;
+            }
+
+            if ($cmp == 'not') {
+                return (bool) $value;
+            }
+
+            if ($cmp == 'in') {
+                return in_array('', $value) || in_array(null, $value);
+            }
+
+            if ($cmp == 'notin') {
+                return !in_array('', $value) || in_array(null, $value);
+            }
+
+            if ($cmp == 'null') {
+                return true;
+            }
+
+            if ($cmp == 'notnull') {
+                return false;
+            }
+
+            if ($cmp == 'matches') {
+                return (bool) preg_match($value, '');
+            }
+
+            if ($cmp == 'truthy') {
+                return false;
+            }
+
+            if ($cmp == 'falsy') {
+                return true;
+            }
+
+            if ($cmp == 'lt') {
+                return strcmp('', $value) < 0;
+            }
+
+            if ($cmp == 'gt') {
+                return strcmp('', $value) > 0;
+            }
+
+            if ($cmp == 'lte') {
+                return strcmp('', $value) <= 0;
+            }
+
+            if ($cmp == 'gte') {
+                return strcmp('', $value) >= 0;
+            }
+
+            throw new Exception(__METHOD__ . ': unsupported comparison');
+        }
+
+        if ($cmp == 'exists') {
+            return true;
+        }
+
+        if ($cmp == 'notexists') {
+            return false;
+        }
+
+        $resolved = static::propertyExpressionValue($o, $property);
+
+        if ($cmp == 'is') {
+            return $resolved == $value;
+        }
+
+        if ($cmp == 'not') {
+            return $resolved != $value;
+        }
+
+        if ($cmp == 'in') {
+            return in_array($resolved, $value);
+        }
+
+        if ($cmp == 'notin') {
+            return !in_array($resolved, $value);
+        }
+
+        if ($cmp == 'null') {
+            return is_null($resolved);
+        }
+
+        if ($cmp == 'notnull') {
+            return !is_null($resolved);
+        }
+
+        if ($cmp == 'matches') {
+            return (bool) preg_match($value, $resolved);
+        }
+
+        if ($cmp == 'truthy') {
+            return (bool) $resolved;
+        }
+
+        if ($cmp == 'falsy') {
+            return !(bool) $resolved;
+        }
+
+        if ($cmp == 'lt') {
+            return strcmp($resolved, $value) < 0;
+        }
+
+        if ($cmp == 'gt') {
+            return strcmp($resolved, $value) > 0;
+        }
+
+        if ($cmp == 'lte') {
+            return strcmp($resolved, $value) <= 0;
+        }
+
+        if ($cmp == 'gte') {
+            return strcmp($resolved, $value) >= 0;
+        }
+
+        throw new Exception(__METHOD__ . ': unsupported comparison');
     }
 }
