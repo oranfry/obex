@@ -10,12 +10,24 @@ class ObjectArray
 
     public function __construct(array $objects = [])
     {
-        $this->objects = $objects;
+        foreach ($objects as $thing) {
+            if (!is_object($thing)) {
+                throw new Exception('Encounterd a non-object');
+            }
+        }
+
+        $this->objects = array_values($objects);
     }
 
     public function append(array $objects): self
     {
-        $this->objects = array_merge($this->objects, $objects);
+        foreach ($objects as $thing) {
+            if (!is_object($thing)) {
+                throw new Exception('Encounterd a non-object');
+            }
+        }
+
+        $this->objects = array_merge($this->objects, array_values($objects));
 
         return $this;
     }
@@ -60,13 +72,7 @@ class ObjectArray
 
     public function first(): ?object
     {
-        $resolved = $this->resolve();
-
-        if (!count($resolved)) {
-            return null;
-        }
-
-        return reset($resolved);
+        return $this->objects[0] ?? null;
     }
 
     public function index(string $property, string $cmp = 'exists', $value = null, $value_is_expression = false): string|int
