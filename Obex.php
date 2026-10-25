@@ -83,7 +83,7 @@ class Obex
 
     public static function indicies(array $objectArray, $property, string $cmp = 'exists', $values = [], bool $value_is_expression = false): array
     {
-        return array_map(function($value) use ($objectArray, $property, $cmp) {
+        return array_map(function($value) use ($objectArray, $property, $cmp, $value_is_expression) {
             return static::index($objectArray, $property, $cmp = 'exists', $value, $value_is_expression);
         }, $values);
     }
