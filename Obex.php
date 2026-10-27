@@ -242,11 +242,15 @@ class Obex
 
     public static function remove(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): ?object
     {
-        $count = count($objectArray);
+        $isList = array_is_list($objectArray);
 
-        for ($i = 0; $i < $count; $i++) {
-            if (static::test($object = $objectArray[$i], $property, $cmp, $value, $value_is_expression)) {
-                array_splice($objectArray, $i, 1);
+        foreach ($objectArray as $key => $object) {
+            if (static::test($object, $property, $cmp, $value, $value_is_expression)) {
+                unset($objectArray[$key]);
+
+                if ($isList) {
+                    $objectArray = array_values($objectArray);
+                }
 
                 return $object;
             }
@@ -257,17 +261,20 @@ class Obex
 
     public static function removeAll(array &$objectArray, string $property, string $cmp = 'exists', $value = null, bool $value_is_expression = false): array
     {
+        $isList = array_is_list($objectArray);
+
         $removed = [];
         $count = count($objectArray);
 
-        for ($i = 0; $i < $count; $i++) {
-            $object = $objectArray[$i];
-
+        foreach ($objectArray as $key => $object) {
             if (static::test($object, $property, $cmp, $value, $value_is_expression)) {
-                array_splice($objectArray, $i--, 1);
-                $count--;
+                unset($objectArray[$key]);
                 $removed[] = $object;
             }
+        }
+
+        if ($isList) {
+            $objectArray = array_values($objectArray);
         }
 
         return $removed;

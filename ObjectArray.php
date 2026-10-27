@@ -16,7 +16,7 @@ class ObjectArray
             }
         }
 
-        $this->objects = array_values($objects);
+        $this->objects = $objects;
     }
 
     public function append(array $objects): self
@@ -27,7 +27,7 @@ class ObjectArray
             }
         }
 
-        $this->objects = array_merge($this->objects, array_values($objects));
+        $this->objects = array_merge($this->objects, $objects);
 
         return $this;
     }
@@ -72,7 +72,7 @@ class ObjectArray
 
     public function first(): ?object
     {
-        return $this->objects[0] ?? null;
+        return reset($this->objects);
     }
 
     public function index(string $property, string $cmp = 'exists', $value = null, $value_is_expression = false): string|int
